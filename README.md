@@ -43,9 +43,15 @@ A pqAuth authentication handshake has four steps:
 
 ```javascript
 // string-concatenate the GUIDs
+// this is your client credential
 session_key = client_guid + server_guid
 ```
 
-After this, the client must include `session_key` in every API call. pqAuth does not specify how `session_key` must be included in subsequent requests, that is API implementation specific.
 
-Some API providers want `session_key` to be attached as a request variable (`https://api.provider.com/call?session_key=xxx`), some want it as an HTTP header (`X-Session-Key: xxx`), still others may want it as an HMAC signature somewhere. The point is, pqAuth is designed to integrate with existing APIs, only providing an authentication method.
+### Things that are Good to Know
+
+  - The client must include `session_key` in every subsequent API call, but **how** that's done is implementation-specific. (URL parameter, HTTP header, part of an HMAC signature, whatever)
+  - If the server specified `session_key_timeout`, the client and server need to do this dance again when the `session_key` expires.
+  - **Do everything over HTTPS**, if you're not already. While it's safe to do this authentication dance over an insecure channel like HTTP, the `session_key` is a secret, and probably isn't protected in-transit after this authentication dance. But I'm just a developer, I'm not your Dad. Do whatever you want.
+
+
