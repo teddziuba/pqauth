@@ -4,6 +4,29 @@ pqAuth
 Web API Authentication with SSH Public Keys
 
 
+## The Basics in Python
+
+```python
+# On the client
+
+from pqauth import client
+from pqauth import crypto
+
+# Load the client's private SSH key, supply password if encrypted.
+client_key = crypto.load_key_file("/path/to/id_rsa", password="bosco")
+server_pub_key = crypto.load_key_file("/path/to/server/id_rsa.pub")
+
+authn_client = client.PQAuthClient(client_key, server_pub_key)
+
+hello_message = authn_client.get_init_message() # POST this to the server
+client.process_server_init_response(server_response)
+confirmation_message = authn_client.get_final_message() # POST this to the server
+
+# This is your "token" for API calls to the server
+secret_session_key = authn_client.session_key
+
+```
+
 ## Protocol Overview
 
 pqAuth is an implementation of the [Needham-Schroeder-Lowe Public-Key Protocol](http://en.wikipedia.org/wiki/Needham%E2%80%93Schroeder_protocol) over HTTP. Using pqAuth, Web APIs and their clients can authenticate eachother using SSH keys, and agree on a *session key*, a temporary authentication token that the client sends along with API requests.
