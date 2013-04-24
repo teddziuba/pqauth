@@ -55,3 +55,15 @@ session_key = client_guid + server_guid
   - **Do everything over HTTPS**, if you're not already. While it's safe to do this authentication dance over an insecure channel like HTTP, the `session_key` is a secret, and probably isn't protected in-transit after this authentication dance. But I'm just a developer, I'm not your Dad. Do whatever you want.
 
 
+## Comparison to SSL Client Authentication
+
+*"But isn't this what SSL Client Certificates do? And pqAuth doesn't even use a certificate authority!"*
+
+
+Yes, this is sort of what SSL client certificates do, but there are e pretty serious problems with SSL client certificates:
+
+  - **They are nearly impossible to use.** Seriously. Try it some time, it will make you want to stab yourself in the eyeball with a soldering iron. And then, get your load balancer or HTTP server to pass the client identity information along to the app. It's brutal.
+  - **You can't extract a session key.** After the SSL/TLS negotiation is done, the client and server share a secret, but this is at the transport layer, and you can't really get at it from the application layer.
+  - **You need a certificate authority to sign client certificates.** On its face, this isn't a bad thing, after all, if Verisign says your client is who he says he is, believe it, right? But good luck getting client certs actually signed by CAs. Sure, you could start up your own CA to sign your client certs, but at that point, you're just using a CA to satisfy SSL's bureaucracy instead of as an actual source of trust.
+
+SSL client authentication is well intentioned, but the implementation is a disaster.
