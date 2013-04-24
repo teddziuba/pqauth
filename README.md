@@ -27,6 +27,8 @@ secret_session_key = authn_client.session_key
 
 ```
 
+I'm still working on the server-side part, but look at the tests to get the basic idea.
+
 ## Protocol Overview
 
 pqAuth is an implementation of the [Needham-Schroeder-Lowe Public-Key Protocol](http://en.wikipedia.org/wiki/Needham%E2%80%93Schroeder_protocol) over HTTP. Using pqAuth, Web APIs and their clients can authenticate eachother using SSH keys, and agree on a *session key*, a temporary authentication token that the client sends along with API requests.
