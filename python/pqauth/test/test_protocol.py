@@ -2,7 +2,7 @@ import unittest
 
 from pqauth import crypto
 from pqauth.client import PQAuthClient
-from pqauth.server import PQAuthServer
+from pqauth.server import PQAuthServerFlow
 
 CLIENT_KEY = crypto.load_key_file("./keys/id_client")
 SERVER_KEY = crypto.load_key_file("./keys/id_server")
@@ -13,7 +13,11 @@ class ProtocolTest(unittest.TestCase):
 
     def test_happy_case(self):
         client = PQAuthClient(CLIENT_KEY, SERVER_KEY)
-        server = PQAuthServer(SERVER_KEY, CLIENT_KEY)
+        server = PQAuthServerFlow(SERVER_KEY)
+
+        # jacked, for testing
+        server._client_public_key = CLIENT_KEY
+
 
         init_msg = client.get_init_message()
         server.process_client_init_request(init_msg)
