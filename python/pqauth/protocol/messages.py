@@ -4,10 +4,8 @@ from pqauth.crypto import public_key_fingerprint
 from pqauth.crypto import rsa_encrypt
 from pqauth.crypto import rsa_decrypt
 from pqauth.crypto import random_guid
+from pqauth.protocol import ProtocolError
 
-
-class ProtocolError(Exception):
-    pass
 
 
 def client_whatup_message(client_public_key):
@@ -27,13 +25,15 @@ def client_whatup_message(client_public_key):
     return message
 
 
-def server_yaheard_message(client_guid, server_public_key):
+def server_yaheard_message(client_guid, server_public_key, expires=None):
     """
     Authentication Step 2
 
 
     Server sends its own nonce back to the client, along with the nonce
     the client sends. Server also sends its own identity fingerprint.
+    Optionally, the server may send an "expires" timestamp, after which
+    the session key will no longer be honored.
 
     While not necessarily used for a key lookup on the client side, this
     mitigates a Man-In-The-Middle attack on the protocol, provided the
@@ -46,6 +46,7 @@ def server_yaheard_message(client_guid, server_public_key):
 
     message = {"client_guid": client_guid,
                "server_guid": random_guid(),
+               "expires": expires,
                "server_key_fingerprint": public_key_fingerprint(server_public_key)}
     return message
 
@@ -75,13 +76,17 @@ def get_session_key(client_guid, server_guid):
     return ":".join([client_guid, server_guid])
 
 
-def encrypt_message(message, public_key):
+def encrypt(message, public_key):
     as_json = json.dumps(message)
     return rsa_encrypt(as_json, public_key)
 
 
-def decrypt_message(message, private_key):
-    json_string = rsa_decrypt(message, private_key)
+def decrypt(message, private_key):
+    try:
+        json_string = rsa_decrypt(message, private_key)
+    except ValueError, v:
+        raise ProtocolError(v)
+
     return json.loads(json_string)
 
 
