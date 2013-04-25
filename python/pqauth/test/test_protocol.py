@@ -1,3 +1,4 @@
+import time
 import unittest
 
 from pqauth import crypto
@@ -99,6 +100,22 @@ class ProtocolTest(unittest.TestCase):
         # (It's been encrypting with EVIL_KEY)
         self.assertRaises(ProtocolError, client.validate_server_hello_response,
                           legit_response, client_guid, CLIENT_KEY, EVIL_KEY)
+
+
+    def test_client_receives_expiry_timestamp(self):
+        client_guid, client_hello = client.get_hello_message(CLIENT_KEY,
+                                                             SERVER_KEY)
+
+        sent_expires = int(time.time())
+
+        _, hello_response = server.get_client_hello_response(
+            client_hello, SERVER_KEY, KEY_STORE, sent_expires)
+
+        _, received_expires = client.validate_server_hello_response(
+            hello_response, client_guid, CLIENT_KEY, SERVER_KEY)
+
+        self.assertEquals(sent_expires, received_expires)
+
 
 if __name__ == "__main__":
     unittest.main()
