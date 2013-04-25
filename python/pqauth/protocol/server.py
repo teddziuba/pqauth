@@ -44,9 +44,11 @@ class MemoryClientPublicKeyStore(ClientPublicKeyStore):
 
 def get_client_hello_response(hello_request, server_key,
                               client_key_store, expires=None):
+    # TODO: clean this up. Needs better encapsulation.
     """
-    Returns (server_guid, encrypted_response) if the client's hello
-    request is valid, otherwise, raises ProtocolError.
+    Returns (plaintext_response, encrypted_response)
+    if the client's hello request is valid,
+    otherwise, raises ProtocolError.
 
 
     This function looks up the client's public RSA key from the
@@ -69,11 +71,10 @@ def get_client_hello_response(hello_request, server_key,
         raise UnknownClient(msg)
 
     response = messages.server_yaheard_message(client_guid, server_key, expires)
-    server_guid = response["server_guid"]
     encrypted = messages.encrypt(response, client_key)
 
 
-    return server_guid, encrypted
+    return (response, encrypted)
 
 
 def validate_client_confirmation_message(confirmation_message,

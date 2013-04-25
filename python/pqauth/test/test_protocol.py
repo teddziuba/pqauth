@@ -23,15 +23,15 @@ class ProtocolTest(unittest.TestCase):
         client_guid, client_hello = client.get_hello_message(CLIENT_KEY,
                                                              SERVER_KEY)
 
-        # Server looks up client's public key and formulates its reply.
-        server_guid, hello_response = server.get_client_hello_response(
+        # Server looks up client's public key and formulates its
+        hello_plain, hello_encrypted = server.get_client_hello_response(
             client_hello, SERVER_KEY, KEY_STORE, None)
 
         # Client verifies the server's reply
         returned_server_guid, expires = client.validate_server_hello_response(
-            hello_response, client_guid, CLIENT_KEY, SERVER_KEY)
+            hello_encrypted, client_guid, CLIENT_KEY, SERVER_KEY)
 
-        self.assertEquals(server_guid, returned_server_guid)
+        self.assertEquals(hello_plain["server_guid"], returned_server_guid)
         self.assertIsNone(expires)
 
         # Client generates confirmation message
@@ -40,7 +40,7 @@ class ProtocolTest(unittest.TestCase):
 
         # Server validates the client's confirmation
         auth_success = server.validate_client_confirmation_message(
-            confirm_message, SERVER_KEY, server_guid)
+            confirm_message, SERVER_KEY, hello_plain["server_guid"])
 
         self.assertTrue(auth_success)
 
@@ -108,11 +108,11 @@ class ProtocolTest(unittest.TestCase):
 
         sent_expires = int(time.time())
 
-        _, hello_response = server.get_client_hello_response(
+        hello_plain, hello_encrypted = server.get_client_hello_response(
             client_hello, SERVER_KEY, KEY_STORE, sent_expires)
 
         _, received_expires = client.validate_server_hello_response(
-            hello_response, client_guid, CLIENT_KEY, SERVER_KEY)
+            hello_encrypted, client_guid, CLIENT_KEY, SERVER_KEY)
 
         self.assertEquals(sent_expires, received_expires)
 
