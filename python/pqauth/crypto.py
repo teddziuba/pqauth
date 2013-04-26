@@ -3,6 +3,7 @@ import uuid
 
 from Crypto.Cipher import PKCS1_OAEP
 from Crypto.PublicKey import RSA
+from Crypto.Random import random
 from paramiko.rsakey import RSAKey as ParamikoRSAKey
 
 
@@ -43,4 +44,6 @@ def rsa_decrypt(ciphertext, receiver_private_key):
 
 
 def random_guid():
-    return str(uuid.uuid4())
+    secure_random = random.getrandbits(128)
+    random_uuid = uuid.UUID(int=secure_random)
+    return str(random_uuid)
