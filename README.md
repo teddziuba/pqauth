@@ -9,25 +9,27 @@ Web API Authentication with SSH Public Keys
 ```python
 # On the client
 
-from pqauth import client
 from pqauth import crypto
+from pqauth.client import ClientAuthenticator
 
-# Load the client's private SSH key, supply password if encrypted.
+# Load the RSA keys, optionally decrypting them if they are encrypted
 client_key = crypto.load_key_file("/path/to/id_rsa", password="bosco")
-server_pub_key = crypto.load_key_file("/path/to/server/id_rsa.pub")
+server_public_key = crypto.load_key_file("/path/to/server/id_rsa.pub")
 
-authn_client = client.PQAuthClient(client_key, server_pub_key)
+# paAuth endpoints on the API server
+server_hello_url = "https://api.example.com/pqauth/hello"
+server_confirm_url = "https://api.example.com/pqauth/confirm"
 
-hello_message = authn_client.get_init_message() # POST this to the server
-client.process_server_init_response(server_response)
-confirmation_message = authn_client.get_final_message() # POST this to the server
+authenticator = ClientAuthenticator(client_key, server_public_key,
+                                    server_hello_url, server_confirm_url)
 
-# This is your "token" for API calls to the server
-secret_session_key = authn_client.session_key
+# A string to use as the auth token for further requests
+# The server knows the same session_key.
+session_key = authenticator.authenticate()
 
 ```
 
-I'm still working on the server-side part, but look at the tests to get the basic idea.
+I'm still working on the server-side part, but look at the Django example.
 
 ## Protocol Overview
 
@@ -40,7 +42,7 @@ A pqAuth authentication handshake has four steps:
 // encrypted with server's public key
 {
   client_guid: "6304fb3e-68ed-4e59-bfd5-ab03ebc15762",
-  client_public_key_fingerprint: "df:ab:ec:d1:66:ef:32:df:ab:62:d3:4a:0d:f3:f4:28"
+  client_key_fingerprint: "df:ab:ec:d1:66:ef:32:df:ab:62:d3:4a:0d:f3:f4:28"
 }
 ```
 
@@ -51,8 +53,8 @@ A pqAuth authentication handshake has four steps:
 {
   client_guid: "6304fb3e-68ed-4e59-bfd5-ab03ebc15762",
   server_guid: "097e21da-2aa9-40d8-9872-8c9698f91e9c",
-  session_key_timeout: 1366761788, // optional, session key timeout timestamp
-  server_public_key_fingerprint: "46:2b:54:17:2a:28:d0:55:57:2e:68:37:35:b3:6d:a7"
+  expires: 1366761788, // optional, session key timeout timestamp
+  server_key_fingerprint: "46:2b:54:17:2a:28:d0:55:57:2e:68:37:35:b3:6d:a7"
 }
 ```
 
@@ -69,14 +71,14 @@ A pqAuth authentication handshake has four steps:
 ```javascript
 // string-concatenate the GUIDs
 // this is your client credential
-session_key = client_guid + server_guid
+session_key = client_guid + ":" + server_guid
 ```
 
 
 ### Things that are Good to Know
 
   - The client must include `session_key` in every subsequent API call, but **how** that's done is implementation-specific. (URL parameter, HTTP header, part of an HMAC signature, whatever)
-  - If the server specified `session_key_timeout`, the client and server need to do this dance again when the `session_key` expires.
+  - If the server specified `expires`, the client and server need to do this dance again when the `session_key` expires.
   - **Do everything over HTTPS**, if you're not already. While it's safe to do this authentication dance over an insecure channel like HTTP, the `session_key` is a secret, and probably isn't protected in-transit after this authentication dance. But I'm just a developer, I'm not your Dad. Do whatever you want.
 
 
