@@ -4,8 +4,6 @@ from pqauth.crypto import public_key_fingerprint
 from pqauth.crypto import rsa_encrypt
 from pqauth.crypto import rsa_decrypt
 from pqauth.crypto import random_guid
-from pqauth.protocol import ProtocolError
-
 
 
 def client_whatup_message(client_public_key):
@@ -82,11 +80,7 @@ def encrypt(message, public_key):
 
 
 def decrypt(message, private_key):
-    try:
-        json_string = rsa_decrypt(message, private_key)
-    except ValueError, v:
-        raise ProtocolError(v)
-
+    json_string = rsa_decrypt(message, private_key)
     return json.loads(json_string)
 
 

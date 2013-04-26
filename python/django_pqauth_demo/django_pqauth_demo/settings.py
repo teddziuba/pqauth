@@ -1,4 +1,5 @@
 # Django settings for django_pqauth_demo project.
+from pqauth import crypto
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
@@ -154,3 +155,5 @@ LOGGING = {
         },
     }
 }
+
+SERVER_KEY = crypto.load_key_file("./server.key")

@@ -15,5 +15,6 @@ urlpatterns = patterns('',
 
     # Uncomment the next line to enable the admin:
     url(r'^admin/', include(admin.site.urls)),
-    url(r'^api/endpoint$', views.access_controlled_endpoint)
+    url(r"^pqauth/", include("django_pqauth_server.urls")),
+    url(r'^api/endpoint$', views.access_controlled_endpoint),
 )
