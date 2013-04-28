@@ -5,6 +5,6 @@ from django_pqauth_server import views
 urlpatterns = patterns(
     "",
     url(r"^public-key", views.public_key),
-    url(r"^hello", views.handle_client_hello),
+    url(r"^hello", views.hello),
     url(r"^confirm", views.handle_client_confirmation)
 )

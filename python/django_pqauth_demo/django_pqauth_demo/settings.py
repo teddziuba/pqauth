@@ -156,4 +156,4 @@ LOGGING = {
     }
 }
 
-SERVER_KEY = crypto.load_key_file("./server.key")
+PQAUTH_SERVER_KEY = "./server.key"
