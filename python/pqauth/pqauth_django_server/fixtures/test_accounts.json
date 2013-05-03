@@ -1,0 +1,17 @@
+[
+    { "model": "auth.user",
+        "pk": 1,
+        "fields": {
+            "username": "api-user",
+            "password": "!"
+        }
+    },
+    {
+        "model": "pqauth_django_server.PublicKey",
+        "pk": "de:96:14:9e:99:04:97:16:4b:08:99:30:1a:0b:51:18",
+        "fields": {
+            "user": 1,
+            "ssh_key": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDjghIwGSjVuWFpHvUQY+6geNwILvy6kvS9LaenjF+xLcs5jADGRbE4u7mdEPcIrX2rd0gV8NE/x/MM1BJRMfbAkCl5i1FAl2Apt4KkyvNfHT7dBD8lXn0w09P4pKUmgAet57LX4djL0RIQIQMNuUdV0cIOPNhIsFoZlybsmWBGK+BhCu6R21TYZSQ8DRPY4ymj0EzGVU6U0jCpT0QSX2vz8XE4AckVO+8bt2xk8bSo1AI4UAWgGO4vUEzL+g4ZmHqMSKzTrL/T3nwB1a83Vr7W4La2/XW4mxKBlW6ZLQ+LvFVFYbX5kybk27vp3865kDnalSEZyPcwHQml9tB1b7K7"
+        }
+    }
+]

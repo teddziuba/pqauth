@@ -7,16 +7,15 @@ from django.conf import settings
 from django.views.decorators.http import require_POST
 from django.views.decorators.http import require_safe
 from django.views.decorators.csrf import csrf_exempt
-from django.core.urlresolvers import reverse
 
 from pqauth.crypto import rsa_decrypt
 from pqauth.crypto import rsa_encrypt
 from pqauth.crypto import random_guid
 
-from django_pqauth_server.keys import SERVER_KEY
-from django_pqauth_server.keys import SERVER_KEY_FINGERPRINT
-from django_pqauth_server.models import PublicKey
-from django_pqauth_server.models import PQAuthSession
+from pqauth.pqauth_django_server.keys import SERVER_KEY
+from pqauth.pqauth_django_server.keys import SERVER_KEY_FINGERPRINT
+from pqauth.pqauth_django_server.models import PublicKey
+from pqauth.pqauth_django_server.models import PQAuthSession
 
 
 def encrypted_json_post(view_func):
@@ -59,28 +58,22 @@ def hello(request):
                                     user=client_key.user)
     started_session.save()
 
-    encrypted_response = rsa_encrypt(json.dumps(started_session),
+    encrypted_response = rsa_encrypt(json.dumps(response),
                                      client_key.public_key)
 
     return HttpResponse(encrypted_response,
                         mimetype="application/pqauth-encrypted")
 
 
-@require_POST
-@csrf_exempt
-def handle_client_confirmation(request):
-    handler = server.ClientConfirmationHandler(settings.SERVER_KEY)
-    confirmation = _decrypt_request(handler, request)
-    if not confirmation:
-        return _decryption_fail_response()
-
-    guid = confirmation["server_guid"]
+@encrypted_json_post
+def confirm(request):
+    confirm = request.decrypted_json
+    guid = confirm["server_guid"]
 
     try:
         started_session = PQAuthSession.objects.get(server_guid=guid)
-        sk = messages.get_session_key(started_session.client_guid,
-                                      started_session.server_guid)
-        started_session.session_key = sk
+        started_session.session_key = "%s:%s" % (started_session.client_guid,
+                                                 started_session.server_guid)
         started_session.save()
     except PQAuthSession.DoesNotExist:
         pass
