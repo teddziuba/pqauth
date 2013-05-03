@@ -22,3 +22,4 @@ ROOT_URLCONF = "pqauth.pqauth_django_server.urls"
 
 
 TEST_CLIENT_KEY = os.path.join(DIRNAME, "client.key")
+TEST_EVIL_KEY = os.path.join(DIRNAME, "evil.key")

@@ -3,6 +3,10 @@ import json
 from pqauth import crypto
 
 
+class ProtocolError(Exception):
+    pass
+
+
 class PQAuthClient(object):
     def __init__(self, client_key, server_key):
         self.client_key = client_key
@@ -13,6 +17,7 @@ class PQAuthClient(object):
 
         self.client_guid = None
         self.server_guid = None
+        self.expires = None
 
 
     @property
@@ -30,10 +35,22 @@ class PQAuthClient(object):
 
 
     def process_hello_response(self, response):
+        # Check the server send back the client_guid we sent.
         if response["client_guid"] != self.client_guid:
-            raise Exception("oh shit")
-        # Check fprint
-        # save expiry
+            message = ("Server did not send back the expected client_guid. "
+                       "Expected: %s, Got: %s" %
+                       (self.client_guid, response["client_guid"]))
+            raise ProtocolError(message)
+
+        # Check the server's stated fingerprint matches the one we know
+        if response["server_key_fingerprint"] != self.server_key_fprint:
+            message = ("Server did not send back the expected key fingerprint. "
+                       "Expected: %s, Got: %s" %
+                       (self.server_key_fprint,
+                        response["server_key_fingerprint"]))
+            raise ProtocolError(message)
+
+        self.expires = response["expires"]
         self.server_guid = response["server_guid"]
 
 
